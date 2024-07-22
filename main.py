@@ -10,6 +10,10 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from daily_task import DeferredTask
+from redis_client import RedisClient
+from requests import HTTPClient
+
 
 TOKEN = settings.bot_token
 
@@ -33,12 +37,28 @@ async def echo_handler(message: Message) -> None:
         await message.answer("Nice try!")
 
 
+async def on_startup() -> None:
+    client = HTTPClient()
+    redis_client = RedisClient()
+    try:
+        data = await client.get_data()
+        async with redis_client as redis:
+            await redis.set_data(data)
+            print(client.keys)
+            await redis.set_keys(client.keys)
+    finally:
+        await client.close()
+
+
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
+
     # And the run events dispatching
+    await DeferredTask(on_startup).daily_update_valute()
     await dp.start_polling(bot)
+
 
 
 if __name__ == "__main__":
