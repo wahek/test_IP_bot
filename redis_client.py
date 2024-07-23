@@ -16,6 +16,13 @@ class RedisClient:
     async def get(self, key):
         return json.loads(await self.redis.get(key))
 
+    async def mget(self, keys: list | set):
+        return await self.redis.mget(*keys)
+
+    async def get_valute(self, key) -> list:
+        a = await self.redis.sinter(key)
+        return json.loads(a)    # TODO здесь доделать
+
     async def set_data(self, data: list[dict]):
         print('start')
         async with self.redis.pipeline() as pipe:
@@ -32,10 +39,24 @@ class RedisClient:
             await pipe.delete(key)
             for item in data.values():
                 for v in item:
-                    print(v)
                     await pipe.sadd(key, v)
             await pipe.execute()
             print('okk')
+
+    async def set_user(self, user_id):
+        await self.redis.set(user_id, json.dumps({'valute': None, 'invert': 1}))
+
+    async def user_invert(self, user_id) -> bool:
+        data = await self.get(user_id)
+        data['invert'] = 1 if data['invert'] == 0 else 0
+        await self.redis.set(user_id, json.dumps(data))
+        return data['invert']
+
+    async def user_currency(self, user_id, currency):
+        data = await self.get(user_id)
+        data['valute'] = currency
+        await self.redis.set(user_id, json.dumps(data))
+
 
     async def __aenter__(self):
         await self.__connect()
@@ -49,7 +70,13 @@ if __name__ == '__main__':
     async def main():
         async with RedisClient() as redis:
             await redis.set_keys({5: {6, 7, 8, 9}})
-            # print(await redis.get('5'))
+            await redis.set_user(123)
+            print(await redis.get(123))
+            await redis.user_invert(123)
+            await redis.user_invert(123)
+            await redis.user_currency(123, 'USD')
+            print(await redis.get(123))
+            print(await redis.mget(['USD', 'EUR']))
 
 
     asyncio.run(main())
