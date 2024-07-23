@@ -3,9 +3,9 @@ from decimal import Decimal, getcontext
 
 from aiogram import html
 from redis_client import RedisClient
-from daily_task import DeferredTask
 
 getcontext().prec = 4
+
 
 class StringForAiogram:
     """Класс для подготовки строк для отправки пользователю"""

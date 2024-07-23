@@ -1,5 +1,3 @@
-import asyncio
-
 from aiohttp import ClientSession
 from xml.etree import ElementTree
 
@@ -75,4 +73,3 @@ class HTTPClient:
     async def get_data(self) -> list[dict]:
         await self.update()
         return self.data
-

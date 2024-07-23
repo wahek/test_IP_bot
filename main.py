@@ -1,10 +1,7 @@
 import asyncio
 import logging
 import sys
-import time
-from os import getenv
 from config import settings
-import re
 
 from aiogram import Bot, Dispatcher, html, F
 from aiogram.client.default import DefaultBotProperties
@@ -124,4 +121,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print('STOP')
-

@@ -38,4 +38,3 @@ class DeferredTask:
             logging.info("Данные обновлены")
             await self.daily_task()
             await asyncio.sleep(self.FREQUENCY_UPDATE)
-
