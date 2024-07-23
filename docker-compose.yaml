@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    env_file: .env
+    command: python main.py
+    volumes:
+      - .:/test_aiogram
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
