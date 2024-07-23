@@ -1,11 +1,12 @@
 import asyncio
-import json
 
 from aiohttp import ClientSession
 from xml.etree import ElementTree
 
 
 class HTTPClient:
+    """Класс для работы с API ЦБ"""
+
     CENTRAL_BUNK_API = 'https://cbr.ru/scripts/XML_daily.asp'
 
     def __init__(self, uri: str = CENTRAL_BUNK_API):
@@ -15,7 +16,9 @@ class HTTPClient:
         self.data: list[dict] | None = None
         self.keys: dict | None = None
 
-    async def __get(self):
+    async def __get(self) -> None:
+        """Получение данных с цб XML"""
+
         async with self.__session.get(self.CENTRAL_BUNK_API) as response:
             self.__current_data = await response.text()
 
@@ -23,12 +26,16 @@ class HTTPClient:
         await self.__session.close()
 
     async def __get_data_xml(self) -> ElementTree:
+        """Преобразование в ElementTree"""
+
         try:
             return ElementTree.fromstring(self.__current_data)
         except TypeError:
             return 'Данные не были заполнены, проверьте вызов метода get()'
 
-    async def __parse_elements(self):
+    async def __parse_elements(self) -> list[dict]:
+        """Парсинг данных CharCode, Name, Value"""
+
         currencies = []
         data = await self.__get_data_xml()
         for valute in data.findall('Valute'):
@@ -51,6 +58,8 @@ class HTTPClient:
         self.data = await self.__parse_elements()
 
     async def __fill_keys(self, key='valute'):
+        """Заполнение множества ключей валют"""
+
         current_keys = set()
         for item in self.data:
             for k in item.keys():
@@ -58,6 +67,8 @@ class HTTPClient:
         self.keys = {key: current_keys}
 
     async def update(self):
+        """Обновление всех данных"""
+
         await self.__fill_data()
         await self.__fill_keys()
 
@@ -65,15 +76,3 @@ class HTTPClient:
         await self.update()
         return self.data
 
-
-if __name__ == '__main__':
-    async def main():
-        client = HTTPClient()
-        try:
-            print(await client.get_data())
-            print(client.keys)
-        finally:
-            await client.close()
-
-
-    asyncio.run(main())
