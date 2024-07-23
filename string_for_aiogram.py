@@ -8,8 +8,12 @@ from daily_task import DeferredTask
 getcontext().prec = 4
 
 class StringForAiogram:
+    """Класс для подготовки строк для отправки пользователю"""
+
     @staticmethod
     async def get_all_course() -> list[str]:
+        """Получение строки с курсами валют"""
+
         string_list = []
         async with RedisClient() as redis:
             try:
@@ -24,6 +28,8 @@ class StringForAiogram:
         return string_list
 
     async def calculate_exchange(self, user_id: int, value: float) -> str:
+        """Подготовка строки для отправки пользователю"""
+
         async with RedisClient() as redis:
             try:
                 valute: dict = await redis.get(user_id)
@@ -42,6 +48,8 @@ class StringForAiogram:
                        f'{html.bold(result)} {html.bold("RUB")}'
 
     async def convert(self, user_id: int, string: str) -> str:
+        """Конвертация валюты"""
+
         try:
             string = float(string)
             return await self.calculate_exchange(user_id, string)
@@ -51,6 +59,8 @@ class StringForAiogram:
 
     @staticmethod
     async def __invert_exchange(coast: float, invert: bool, value: float) -> float:
+        """Расчёт конвертации"""
+
         if invert:
             return float(Decimal(value) / Decimal(coast))
         else:

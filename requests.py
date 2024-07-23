@@ -52,7 +52,7 @@ class HTTPClient:
             })
         return currencies
 
-    async def __fill_data(self):
+    async def __fill_data(self) -> None:
         await self.__get()
         await self.__get_data_xml()
         self.data = await self.__parse_elements()
@@ -66,13 +66,13 @@ class HTTPClient:
                 current_keys.add(k)
         self.keys = {key: current_keys}
 
-    async def update(self):
+    async def update(self) -> None:
         """Обновление всех данных"""
 
         await self.__fill_data()
         await self.__fill_keys()
 
-    async def get_data(self):
+    async def get_data(self) -> list[dict]:
         await self.update()
         return self.data
 

@@ -4,16 +4,27 @@ from datetime import datetime, timedelta
 
 
 class DeferredTask:
+    """
+    Класс для выполнения задач по расписанию
+    Выполнение 1 ращ в день
+    """
+
     FREQUENCY_UPDATE = 10  # 1 day (seconds)
 
     def __init__(self, daily_task: callable):
         self.daily_task: callable = daily_task
 
     async def daily_update_valute(self):
+        """Запуск цикла обновления данных"""
+
         task = asyncio.create_task(self.job())
         await task
 
     async def job(self, hour=18, minute=0):
+        """
+        Расписание выполнения задач
+        При запуске, затем в выбранное время(utc), затем каждые 24 часа
+        """
         await self.daily_task()
         logging.info("Данные обновлены")
         now = datetime.utcnow()
@@ -28,9 +39,3 @@ class DeferredTask:
             await self.daily_task()
             await asyncio.sleep(self.FREQUENCY_UPDATE)
 
-
-if __name__ == "__main__":
-    if __name__ == "__main__":
-        async def log():
-            print("hello")
-        asyncio.run(DeferredTask(log).daily_update_valute())

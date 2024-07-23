@@ -27,6 +27,7 @@ dp = Dispatcher()
 
 @dp.message(Command(commands=['start', 'help']))
 async def command_start_handler(message: Message) -> None:
+    """Запуск бота"""
     await message.answer(f"Привет, {html.bold(message.from_user.full_name)}!\n"
                          f"Бот умеет конвертировать валюты в рубли и наоборот\n"
                          f" \n"
@@ -35,16 +36,17 @@ async def command_start_handler(message: Message) -> None:
                          f"Для выбора валюты для конвертации введите команду /currencies\n"
                          f" \n"
                          f"Для инверсии конвертации введите команду /invert", reply_markup=reply.reply_kb)
-    async with RedisClient() as redis:
-        await redis.set_user(message.from_user.id)
+    if 'start' in message.text:
+        async with RedisClient() as redis:
+            await redis.set_user(message.from_user.id)
 
 
 @dp.message(Command('currencies'))
 @dp.message(F.text == 'Выбрать валюту для конвертации')
 async def choice_currency(message: Message) -> None:
+    await message.answer(text='Дополнительные валюты:', reply_markup=await inline.currencies())
     await message.answer(text='Выберете валюту для конвертации\n'
                               'Основные валюты:', reply_markup=await inline.major_currencies())
-    await message.answer(text='Дополнительные валюты', reply_markup=await inline.currencies())
 
 
 @dp.message(Command('invert'))
@@ -94,6 +96,8 @@ async def convert(message: Message) -> None:
 
 
 async def on_startup() -> None:
+    """Создание отложенной задачи для обновления курса валют"""
+
     client = HTTPClient()
     redis_client = RedisClient()
     try:
@@ -106,10 +110,7 @@ async def on_startup() -> None:
 
 
 async def main() -> None:
-    # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-
-    # And the run events dispatching
 
     await asyncio.gather(
         DeferredTask(on_startup).daily_update_valute(),
